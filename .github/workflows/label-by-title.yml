@@ -1,0 +1,71 @@
+name: Label by title
+
+# Runs this repository's own label-by-title action on each issue and pull
+# request whose title is new or changed. `github.event.changes.title` is
+# present only when the title was part of the edit, so a body or base-branch
+# edit does not re-run it. Labels are only added, never removed.
+#
+# The `rules` input is the table, each label mapped to regular expressions that
+# count as alternatives; label-by-title/action.yml gives the format.
+# `skip-on-pull-requests` keeps "agents" off pull requests, since
+# label-by-files.yml decides it there from the changed files with an any-file
+# rule; test_workflows.py checks that the two tables agree.
+#
+# To apply a rule change to existing issues and pull requests, run
+# label-by-title/backfill_labels_by_title.py with `--workflow` pointing at this
+# file; the README's "Label actions" section shows how.
+#
+# The checkout takes the default branch by name, so the script that runs with
+# write permissions is the reviewed one, never one a pull request branch
+# supplies; privileged-checkout-guard accepts this ref.
+
+on:
+  issues:
+    types: [opened, edited]
+  pull_request:
+    types: [opened, edited]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  label-by-title:
+    if: github.event.action == 'opened' || github.event.changes.title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: |
+            label-by-title
+            shared
+
+      - name: Apply labels matching the title
+        uses: ./label-by-title
+        with:
+          rules: |
+            {
+              "agents": [
+                "(\\b|_)agents?(\\b|_)",
+                "(\\b|_)claude(\\b|_)",
+                "(\\b|_)orchestrat\\w*",
+                "(\\b|_)attributions?(\\b|_)"
+              ],
+              "ci": [
+                "(\\b|_)ci(\\b|_)",
+                "(\\b|_)workflows?(\\b|_)",
+                "(\\b|_)dependabot(\\b|_)",
+                "(\\b|_)codeql(\\b|_)"
+              ],
+              "documentation": [
+                "(\\b|_)readme(\\b|_)",
+                "(\\b|_)docs?(\\b|_)",
+                "(\\b|_)documentation(\\b|_)",
+                "(\\b|_)docstrings?(\\b|_)"
+              ]
+            }
+          skip-on-pull-requests: |
+            ["agents"]

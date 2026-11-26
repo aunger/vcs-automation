@@ -1,0 +1,59 @@
+name: Reconcile issue labels
+
+# Runs this repository's own reconcile-issue-labels action, which applies
+# propagate-issue-labels.yml's rule to every open pull request. It is for a pull
+# request linked to an issue from the Development sidebar that then saw none of
+# the events propagate-issue-labels.yml runs on.
+#
+# On demand only (run it from the Actions tab), since a schedule would poll
+# every open pull request indefinitely for a narrow gap.
+#
+# The three tables are propagate-issue-labels.yml's; test_workflows.py fails
+# when the copies differ.
+#
+# The checkout takes the default branch by name, so a run started from another
+# branch still runs the reviewed script.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  reconcile-issue-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: |
+            reconcile-issue-labels
+            propagate-issue-labels
+            shared
+
+      - name: Reconcile issue labels across open pull requests
+        uses: ./reconcile-issue-labels
+        with:
+          excluded-labels: |
+            [
+              "orchestrate",
+              "orchestrating",
+              "verification needed",
+              "verified",
+              "changes requested",
+              "changes done",
+              "agents"
+            ]
+          exclusive-sets: |
+            [
+              ["orchestrate", "orchestrating"],
+              ["verification needed", "verified"],
+              ["changes requested", "changes done"],
+              ["snooze 3 days", "snooze 7 days", "snooze 14 days", "snooze 30 days", "snooze 90 days", "snooze 180 days"]
+            ]
+          exclusive-prefixes: |
+            ["c-a-", "c-r-"]

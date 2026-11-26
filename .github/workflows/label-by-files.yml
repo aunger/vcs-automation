@@ -1,0 +1,55 @@
+name: Label by changed files
+
+# Runs this repository's own label-by-files action on each pull request when it
+# is opened and on each push to it. The `rules` input is the table;
+# label-by-files/action.yml gives the format.
+#
+# "documentation" and "ci" are every-file rules: added when every changed file
+# matches the label's globs, and never removed. "agents" is an any-file rule:
+# added when any changed file matches, and removed when none does. That is why
+# label-by-title.yml skips "agents" on pull requests, and
+# propagate-issue-labels.yml and reconcile-issue-labels.yml never copy it;
+# test_workflows.py checks that the tables agree.
+#
+# To check a rule change against merged pull requests, or to backfill one, run
+# label-by-files/audit_labels_by_files.py with `--workflow` pointing at this
+# file; the README's "Label actions" section shows how.
+#
+# The checkout takes the default branch by name, so the script that runs with
+# write permissions is the reviewed one, never one a pull request branch
+# supplies; privileged-checkout-guard accepts this ref. The action reads the
+# changed files from the API, not from the checkout.
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  label-by-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: |
+            label-by-files
+            shared
+
+      - name: Apply labels matching the changed files
+        uses: ./label-by-files
+        with:
+          rules: |
+            {
+              "documentation": {"mode": "every-file", "paths": ["**/*.md"]},
+              "ci": {"mode": "every-file", "paths": [".github/**"]},
+              "agents": {
+                "mode": "any-file",
+                "paths": ["**/AGENTS.md", "**/CLAUDE.md", ".claude/**"]
+              }
+            }

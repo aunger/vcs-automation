@@ -1,0 +1,52 @@
+name: Snooze issues
+
+# Runs this repository's own snooze-issues action: when a snooze label is added
+# to an open issue, closes it as not planned, so it stops reading as open work
+# until wake-snoozed-issues.yml reopens it.
+#
+# The `snooze-labels` input is the snooze ladder, each label mapped to its days.
+# wake-snoozed-issues.yml takes the same table, and its labels are one of
+# merge-gate.yml's exclusive sets, so an issue carries at most one rung;
+# test_workflows.py checks both. Renaming a rung strands every snooze running
+# under it, since the wake dates a snooze from the rung's `labeled` events; read
+# the docstring of wake-snoozed-issues/wake_snoozed_issues.py first.
+#
+# Issues only: closing a pull request abandons work, which is not what a
+# snooze means.
+#
+# The checkout takes the default branch by name, which an `issues` event
+# checks out anyway; it is spelled out so every workflow here runs the actions
+# the same way.
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  snooze-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: |
+            snooze-issues
+            shared
+
+      - name: Snooze the issue
+        uses: ./snooze-issues
+        with:
+          snooze-labels: |
+            {
+              "snooze 3 days": 3,
+              "snooze 7 days": 7,
+              "snooze 14 days": 14,
+              "snooze 30 days": 30,
+              "snooze 90 days": 90,
+              "snooze 180 days": 180
+            }
