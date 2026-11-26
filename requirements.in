@@ -7,8 +7,10 @@
 # closure to exact versions and SHA-256 hashes so pip --require-hashes can
 # refuse any artifact whose hash does not match.
 #
-# PyYAML parses workflow YAML, for privileged-checkout-guard and for
-# test_action_files.py. The scripts' GitHub API calls use the standard library.
+# PyYAML parses YAML: workflows for privileged-checkout-guard and for
+# shared/workflow_inputs.py (which the label actions' command-line tools use),
+# and workflows and action.yml files for the tests. The scripts' GitHub API
+# calls use the standard library.
 #
 # Regenerating the lock (do this whenever a pin here changes):
 #
