@@ -40,6 +40,7 @@ Each action's `action.yml` documents its inputs, and the permissions and trigger
 - `requirements.in` and `requirements.txt` are the Python dependencies of the scripts, as a hash-pinned lock.
   `dependency-audit/requirements-audit.in` and `.txt` are the lock for `pip-audit` alone.
 - `test_action_files.py` checks every `action.yml` for the mistakes the actions' own tests cannot see.
+- `test_workflows.py` checks this repository's own workflows: that every action runs in one, that each local `uses:` has a checkout holding what it needs, and that the copies of each shared label table agree.
 
 An action that needs a third-party package installs the lock into a virtual environment first, with `install-pinned-requirements`, so no job depends on what its runner image ships.
 The scripts of the other actions use only the standard library.
@@ -94,8 +95,31 @@ run-python-tests/run_tests.sh
 `.github/workflows/test.yml` does the same through the `run-python-tests` action, and runs `dependency-audit` and `privileged-checkout-guard` over this repository.
 The tests need Python 3.11 or later and `bash`.
 
-`.github/workflows/strip-session-bylines.yml` runs `strip-session-bylines` on this repository's own issues, pull requests, comments and reviews, with `issues` and `pull-requests` write access.
-Run by hand (`workflow_dispatch`) with a number, it cleans that whole issue or pull request.
+## This repository's own workflows
+
+Every action runs on this repository too, called by local path (`uses: ./<action>`) from a checkout of it, so each is exercised the way a consumer calls it:
+
+| Workflow | Actions | Runs on |
+| --- | --- | --- |
+| `test.yml` | `run-python-tests`, `dependency-audit`, `privileged-checkout-guard`, and through them `install-pinned-requirements` | pushes to `main`, pull requests, Mondays |
+| `strip-session-bylines.yml` | `strip-session-bylines` | issues, pull requests, comments and reviews as they are written; by hand with a number, that whole issue or pull request |
+| `merge-gate.yml` | `enforce-mutually-exclusive-labels`, then `check-blocking-labels` | labels added to issues; pull request events |
+| `label-by-title.yml` | `label-by-title` | a new or retitled issue or pull request |
+| `label-by-files.yml` | `label-by-files` | a pull request opened or pushed to |
+| `propagate-issue-labels.yml` | `propagate-issue-labels` | a pull request opened, reopened or with its body edited |
+| `reconcile-issue-labels.yml` | `reconcile-issue-labels` | by hand |
+| `snooze-issues.yml` | `snooze-issues` | a snooze label added to an issue |
+| `wake-snoozed-issues.yml` | `wake-snoozed-issues` | daily, or by hand |
+| `archive-stale-test-failures.yml` | `archive-stale-test-failures` | daily, or by hand |
+| `branch-cleanup-report.yml` | `branch-cleanup-report`, in a report job and an approved delete job | Mondays, or by hand |
+
+Each checks out the default branch by name, so a job holding write access runs the reviewed copy of an action, never one a pull request branch supplies.
+A pull request that changes an action is therefore run by these workflows only once it is merged; its own tests are what exercise it before then.
+
+`merge-gate.yml` is wired as "The merge gate and orchestrate's labels" above describes, since this repository uses that protocol: its job, `Merge gate`, is the required status check that holds a merge.
+The label tables of `merge-gate.yml`, `propagate-issue-labels.yml`, `reconcile-issue-labels.yml`, `snooze-issues.yml`, `wake-snoozed-issues.yml`, `label-by-title.yml` and `label-by-files.yml` share the copies "Label actions" lists, and `test_workflows.py` fails when they differ.
+
+`branch-cleanup-report.yml`'s delete job runs in the `branch-deletion` environment, which needs required reviewers and should be limited to deployments from `main`; without reviewers the job starts unapproved and deletes nothing.
 
 ## Copies in other repositories
 
