@@ -1,4 +1,4 @@
-name: Merge gate
+name: Administrative merge holds
 
 # One job, two steps, each one of this repository's own actions, run by local
 # path the way strip-session-bylines.yml runs its action:
@@ -8,7 +8,8 @@ name: Merge gate
 #      added, removes the others of that set or group.
 #   2. check-blocking-labels, on pull request events: fails while any open pull
 #      request whose head is this commit carries a blocking label. The job's
-#      name, "Merge gate", is the required status check that holds the merge.
+#      name, "Administrative merge holds (not failure)", is the required status
+#      check that holds the merge.
 #
 # This is the wiring the README's section "The merge gate and orchestrate's
 # labels" describes for the orchestrate plugin's label protocol, which this
@@ -53,8 +54,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  merge-gate:
-    name: Merge gate
+  administrative-merge-holds:
+    name: Administrative merge holds (not failure)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

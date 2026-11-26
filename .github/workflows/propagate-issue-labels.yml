@@ -16,8 +16,9 @@ name: Propagate issue labels
 # `excluded-labels` are never copied: the orchestrate protocol's six labels,
 # which an issue and its pull request carry separately, and "agents", which
 # label-by-files.yml decides from the changed files. `exclusive-sets` and
-# `exclusive-prefixes` are merge-gate.yml's. The same three tables go to
-# reconcile-issue-labels.yml; test_workflows.py fails when any copy differs.
+# `exclusive-prefixes` are administrative-merge-holds.yml's. The same three
+# tables go to reconcile-issue-labels.yml; test_workflows.py fails when any
+# copy differs.
 #
 # The checkout takes the default branch by name, so the script that runs with
 # write permissions is the reviewed one, never one a pull request branch

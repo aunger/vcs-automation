@@ -373,7 +373,7 @@ class MergeGateTest(unittest.TestCase):
 
     def test_the_gate_job_has_a_name_for_the_required_check(self):
         job = load_workflow(WORKFLOWS / self.gate.workflow)["jobs"][self.gate.job]
-        self.assertEqual("Merge gate", job.get("name"))
+        self.assertEqual("Administrative merge holds (not failure)", job.get("name"))
 
 
 class RulesTest(unittest.TestCase):
@@ -408,7 +408,7 @@ class RulesTest(unittest.TestCase):
             ("README.md", "dependency-audit/README.md"): ["documentation"],
             (".github/workflows/test.yml", ".github/dependabot.yml"): ["ci"],
             (".claude/settings.json", "README.md"): ["agents"],
-            (".github/workflows/merge-gate.yml", "test_workflows.py"): [],
+            (".github/workflows/administrative-merge-holds.yml", "test_workflows.py"): [],
         }.items():
             with self.subTest(paths=paths):
                 self.assertEqual(sorted(labels), lbf.matching_labels(list(paths), self.file_rules))

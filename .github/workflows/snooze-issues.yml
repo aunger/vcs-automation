@@ -6,8 +6,8 @@ name: Snooze issues
 #
 # The `snooze-labels` input is the snooze ladder, each label mapped to its days.
 # wake-snoozed-issues.yml takes the same table, and its labels are one of
-# merge-gate.yml's exclusive sets, so an issue carries at most one rung;
-# test_workflows.py checks both. Renaming a rung strands every snooze running
+# administrative-merge-holds.yml's exclusive sets, so an issue carries at most
+# one rung; test_workflows.py checks both. Renaming a rung strands every snooze running
 # under it, since the wake dates a snooze from the rung's `labeled` events; read
 # the docstring of wake-snoozed-issues/wake_snoozed_issues.py first.
 #

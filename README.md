@@ -103,7 +103,7 @@ Every action runs on this repository too, called by local path (`uses: ./<action
 | --- | --- | --- |
 | `test.yml` | `run-python-tests`, `dependency-audit`, `privileged-checkout-guard`, and through them `install-pinned-requirements` | pushes to `main`, pull requests, Mondays, or by hand |
 | `strip-session-bylines.yml` | `strip-session-bylines` | issues, pull requests, comments and reviews as they are written; by hand with a number, that whole issue or pull request |
-| `merge-gate.yml` | `enforce-mutually-exclusive-labels`, then `check-blocking-labels` | labels added to issues; pull request events |
+| `administrative-merge-holds.yml` | `enforce-mutually-exclusive-labels`, then `check-blocking-labels` | labels added to issues; pull request events |
 | `label-by-title.yml` | `label-by-title` | a new or retitled issue or pull request |
 | `label-by-files.yml` | `label-by-files` | a pull request opened or pushed to |
 | `propagate-issue-labels.yml` | `propagate-issue-labels` | a pull request opened, reopened or with its body edited |
@@ -117,8 +117,8 @@ Every action runs on this repository too, called by local path (`uses: ./<action
 Every other workflow checks out the default branch by name, so a job holding write access runs the reviewed copy of an action, never one a pull request branch supplies.
 A change to one of those actions is therefore run by its workflow only once it is merged; its own tests are what exercise it before then.
 
-`merge-gate.yml` is wired as "The merge gate and orchestrate's labels" above describes, since this repository uses that protocol: its job, `Merge gate`, is the required status check that holds a merge.
-The label tables of `merge-gate.yml`, `propagate-issue-labels.yml`, `reconcile-issue-labels.yml`, `snooze-issues.yml`, `wake-snoozed-issues.yml`, `label-by-title.yml` and `label-by-files.yml` share the copies "Label actions" lists, and `test_workflows.py` fails when they differ.
+`administrative-merge-holds.yml` is wired as "The merge gate and orchestrate's labels" above describes, since this repository uses that protocol: its job, `Administrative merge holds (not failure)`, is the required status check that holds a merge.
+The label tables of `administrative-merge-holds.yml`, `propagate-issue-labels.yml`, `reconcile-issue-labels.yml`, `snooze-issues.yml`, `wake-snoozed-issues.yml`, `label-by-title.yml` and `label-by-files.yml` share the copies "Label actions" lists, and `test_workflows.py` fails when they differ.
 
 `branch-cleanup-report.yml`'s delete job runs in the `branch-deletion` environment, which needs required reviewers and should be limited to deployments from `main`; without reviewers the job starts unapproved and deletes nothing.
 
