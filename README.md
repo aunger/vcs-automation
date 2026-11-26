@@ -101,7 +101,7 @@ Every action runs on this repository too, called by local path (`uses: ./<action
 
 | Workflow | Actions | Runs on |
 | --- | --- | --- |
-| `test.yml` | `run-python-tests`, `dependency-audit`, `privileged-checkout-guard`, and through them `install-pinned-requirements` | pushes to `main`, pull requests, Mondays |
+| `test.yml` | `run-python-tests`, `dependency-audit`, `privileged-checkout-guard`, and through them `install-pinned-requirements` | pushes to `main`, pull requests, Mondays, or by hand |
 | `strip-session-bylines.yml` | `strip-session-bylines` | issues, pull requests, comments and reviews as they are written; by hand with a number, that whole issue or pull request |
 | `merge-gate.yml` | `enforce-mutually-exclusive-labels`, then `check-blocking-labels` | labels added to issues; pull request events |
 | `label-by-title.yml` | `label-by-title` | a new or retitled issue or pull request |
@@ -113,8 +113,9 @@ Every action runs on this repository too, called by local path (`uses: ./<action
 | `archive-stale-test-failures.yml` | `archive-stale-test-failures` | daily, or by hand |
 | `branch-cleanup-report.yml` | `branch-cleanup-report`, in a report job and an approved delete job | Mondays, or by hand |
 
-Each checks out the default branch by name, so a job holding write access runs the reviewed copy of an action, never one a pull request branch supplies.
-A pull request that changes an action is therefore run by these workflows only once it is merged; its own tests are what exercise it before then.
+`test.yml`'s jobs hold only `contents: read`, so they check out what the event names, which on a pull request is its merge ref: a change to one of its four actions runs on the pull request that makes it.
+Every other workflow checks out the default branch by name, so a job holding write access runs the reviewed copy of an action, never one a pull request branch supplies.
+A change to one of those actions is therefore run by its workflow only once it is merged; its own tests are what exercise it before then.
 
 `merge-gate.yml` is wired as "The merge gate and orchestrate's labels" above describes, since this repository uses that protocol: its job, `Merge gate`, is the required status check that holds a merge.
 The label tables of `merge-gate.yml`, `propagate-issue-labels.yml`, `reconcile-issue-labels.yml`, `snooze-issues.yml`, `wake-snoozed-issues.yml`, `label-by-title.yml` and `label-by-files.yml` share the copies "Label actions" lists, and `test_workflows.py` fails when they differ.
