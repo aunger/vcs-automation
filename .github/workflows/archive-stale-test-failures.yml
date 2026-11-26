@@ -1,0 +1,34 @@
+name: Archive stale test failures
+
+# Runs this repository's own archive-stale-test-failures action daily: swaps
+# `test-failure` for `test-failure-archive` on issues with no activity for
+# `stale-days`. Nothing here files `test-failure` issues yet, so a run usually
+# finds none; it runs so that the action is exercised all the same.
+#
+# The checkout takes the default branch by name, so a manual run started from
+# another branch still runs the reviewed script. The cron is offset from
+# wake-snoozed-issues.yml's, so the two daily issue jobs do not start together.
+
+on:
+  schedule:
+    - cron: '43 4 * * *'   # daily at 04:43 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  archive-stale-test-failures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: |
+            archive-stale-test-failures
+            shared
+
+      - name: Archive stale test-failure issues
+        uses: ./archive-stale-test-failures
