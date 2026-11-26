@@ -1,0 +1,75 @@
+name: Branch cleanup report
+
+# Runs this repository's own branch-cleanup-report action twice, as its
+# action.yml asks. The report job sorts every branch into Delete, Review and
+# Keep and writes that to the job summary, ending the Delete section with the
+# names alone, ready to copy. The delete job then waits for approval in the
+# branch-deletion environment: approve it with a comment naming the branches to
+# delete, one per line, and it sorts every branch again and deletes the named
+# ones, out of those the report job offered. A comment with any other line
+# deletes nothing. The rules, and the checks made before deleting anything, are
+# in the docstring of branch-cleanup-report/branch_cleanup_report.py.
+#
+# The branch-deletion environment needs required reviewers (Settings >
+# Environments); without them the delete job starts unapproved, and the script
+# refuses to delete anything. Limit its deployment branches to main too.
+#
+# Each job's checkout is both the clone the script inspects and the copy of
+# the action it runs. It takes the default branch by name, so a manual run
+# started from another branch still runs the reviewed script, and keeps its
+# credentials, which the script fetches with and the delete job pushes with.
+
+on:
+  schedule:
+    - cron: '29 6 * * 1'   # Mondays at 06:29 UTC
+  workflow_dispatch:
+
+# A new run cancels one still waiting for approval, whose report is then out of
+# date. It cancels a delete job already running too; that job logs each
+# deletion as it makes it, so the job log still records what it deleted.
+concurrency:
+  group: branch-cleanup
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      choices: ${{ steps.report.outputs.choices }}
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Write report
+        id: report
+        uses: ./branch-cleanup-report
+        with:
+          mode: report
+
+  delete:
+    needs: report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: branch-deletion
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Delete branches named in the approval
+        uses: ./branch-cleanup-report
+        with:
+          mode: delete
+          environment: branch-deletion
+          choices: ${{ needs.report.outputs.choices }}

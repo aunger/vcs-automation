@@ -1,0 +1,70 @@
+name: Propagate issue labels
+
+# Runs this repository's own propagate-issue-labels action, which copies the
+# labels of the issues a pull request closes onto the pull request. A label
+# that would displace a mutually exclusive label the pull request carries is
+# skipped; propagate-issue-labels/action.yml and the docstring of its script
+# give the rules.
+#
+# GitHub sends no event for a link made from the Development sidebar, so this
+# runs when a pull request is opened or reopened, or its body edited
+# (`github.event.changes.body` is present only then).
+# reconcile-issue-labels.yml covers a pull request that sees none of these.
+# `labeled` and `unlabeled` are left out: a run on `unlabeled` would re-add a
+# label a person just removed.
+#
+# `excluded-labels` are never copied: the orchestrate protocol's six labels,
+# which an issue and its pull request carry separately, and "agents", which
+# label-by-files.yml decides from the changed files. `exclusive-sets` and
+# `exclusive-prefixes` are administrative-merge-holds.yml's. The same three
+# tables go to reconcile-issue-labels.yml; test_workflows.py fails when any
+# copy differs.
+#
+# The checkout takes the default branch by name, so the script that runs with
+# write permissions is the reviewed one, never one a pull request branch
+# supplies; privileged-checkout-guard accepts this ref.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  propagate-issue-labels:
+    if: github.event.action != 'edited' || github.event.changes.body
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: |
+            propagate-issue-labels
+            shared
+
+      - name: Propagate linked issue labels
+        uses: ./propagate-issue-labels
+        with:
+          excluded-labels: |
+            [
+              "orchestrate",
+              "orchestrating",
+              "verification needed",
+              "verified",
+              "changes requested",
+              "changes done",
+              "agents"
+            ]
+          exclusive-sets: |
+            [
+              ["orchestrate", "orchestrating"],
+              ["verification needed", "verified"],
+              ["changes requested", "changes done"],
+              ["snooze 3 days", "snooze 7 days", "snooze 14 days", "snooze 30 days", "snooze 90 days", "snooze 180 days"]
+            ]
+          exclusive-prefixes: |
+            ["c-a-", "c-r-"]

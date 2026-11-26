@@ -1,0 +1,92 @@
+name: Administrative merge holds
+
+# One job, two steps, each one of this repository's own actions, run by local
+# path the way strip-session-bylines.yml runs its action:
+#
+#   1. enforce-mutually-exclusive-labels, on `labeled` events (issues and pull
+#      requests): when a label of a mutually exclusive set or prefix group is
+#      added, removes the others of that set or group.
+#   2. check-blocking-labels, on pull request events: fails while any open pull
+#      request whose head is this commit carries a blocking label. The job's
+#      name, "Administrative merge holds (not failure)", is the required status
+#      check that holds the merge.
+#
+# This is the wiring the README's section "The merge gate and orchestrate's
+# labels" describes for the orchestrate plugin's label protocol, which this
+# repository uses. Enforcement runs first because it can remove a blocking
+# label (adding `orchestrate` removes `orchestrating`), and a removal made with
+# GITHUB_TOKEN starts no new run, so the gate hears of it through step 1's
+# `removed` output in this same job.
+#
+# The two review pairs are separate sets: `verification needed`/`verified`
+# tracks the before-merging items and `changes requested`/`changes done` the
+# Author and Reviewer round. One set would let `verified` remove `changes
+# requested` and open the gate.
+# The last set is the snooze ladder of snooze-issues.yml and
+# wake-snoozed-issues.yml, so an issue carries at most one rung.
+# propagate-issue-labels.yml and reconcile-issue-labels.yml take the same sets
+# and prefixes; test_workflows.py fails when the copies differ.
+#
+# A red job means a hold when step 2 is the red step, and a broken enforcement
+# run when step 1 is (step 2 is then skipped, and the merge stays held). On a
+# fork pull request GITHUB_TOKEN is read-only whatever `permissions:` asks for,
+# so a removal there fails with a 403 and holds the merge until a later event.
+#
+# `closed` is a trigger because closing a pull request can be what unblocks
+# another open one at the same commit; check-blocking-labels/action.yml says
+# more.
+#
+# The checkout takes the default branch by name, so the scripts that run with
+# write permissions are the reviewed ones, never ones a pull request branch
+# supplies; privileged-checkout-guard accepts this ref. A pull request that
+# changes either action is therefore gated by the default branch's copy, and
+# its change first runs here once it is merged.
+
+on:
+  issues:
+    types: [labeled]
+  pull_request:
+    types: [opened, reopened, synchronize, labeled, unlabeled, closed]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  administrative-merge-holds:
+    name: Administrative merge holds (not failure)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: |
+            enforce-mutually-exclusive-labels
+            check-blocking-labels
+            shared
+
+      - name: Enforce mutually exclusive label sets
+        id: enforce
+        if: github.event.action == 'labeled'
+        uses: ./enforce-mutually-exclusive-labels
+        with:
+          exclusive-sets: |
+            [
+              ["orchestrate", "orchestrating"],
+              ["verification needed", "verified"],
+              ["changes requested", "changes done"],
+              ["snooze 3 days", "snooze 7 days", "snooze 14 days", "snooze 30 days", "snooze 90 days", "snooze 180 days"]
+            ]
+          exclusive-prefixes: |
+            ["c-a-", "c-r-"]
+
+      - name: Hold the merge while a blocking label is present
+        if: github.event_name == 'pull_request'
+        uses: ./check-blocking-labels
+        with:
+          blocking-labels: |
+            ["orchestrating", "verification needed", "changes requested", "changes done"]
+          # Empty when step 1 was skipped or removed nothing.
+          removed-labels: ${{ steps.enforce.outputs.removed }}

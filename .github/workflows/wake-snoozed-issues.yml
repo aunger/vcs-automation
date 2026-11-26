@@ -1,0 +1,59 @@
+name: Wake snoozed issues
+
+# Runs this repository's own wake-snoozed-issues action daily: reopens each
+# issue whose snooze label's days have passed, removes that label and the
+# `remove-on-wake` labels, and comments that the snooze has run out. The label
+# decides, not the issue's state: a closed issue is reopened whatever its close
+# reason, and one reopened by hand is stripped and commented on all the same.
+# Remove the snooze label from an issue that should not wake.
+#
+# `snooze-labels` is snooze-issues.yml's table, and `remove-on-wake` is the
+# orchestrate protocol's six labels, which propagate-issue-labels.yml also
+# never copies, so a woken issue does not resume mid-cycle; test_workflows.py
+# checks both pairings.
+#
+# The checkout takes the default branch by name, so a manual run started from
+# another branch still runs the reviewed script.
+
+on:
+  schedule:
+    - cron: '17 5 * * *'   # daily at 05:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  wake-snoozed-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: |
+            wake-snoozed-issues
+            shared
+
+      - name: Wake issues past their snooze
+        uses: ./wake-snoozed-issues
+        with:
+          snooze-labels: |
+            {
+              "snooze 3 days": 3,
+              "snooze 7 days": 7,
+              "snooze 14 days": 14,
+              "snooze 30 days": 30,
+              "snooze 90 days": 90,
+              "snooze 180 days": 180
+            }
+          remove-on-wake: |
+            [
+              "orchestrate",
+              "orchestrating",
+              "verification needed",
+              "verified",
+              "changes requested",
+              "changes done"
+            ]
