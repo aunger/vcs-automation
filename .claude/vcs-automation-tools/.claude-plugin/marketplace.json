@@ -1,0 +1,49 @@
+{
+  "name": "vcs-automation-tools",
+  "description": "The dot-and-tilde plugins this repository uses, each pinned to one dot-and-tilde commit.",
+  "owner": {
+    "name": "aunger"
+  },
+  "plugins": [
+    {
+      "name": "orchestrate",
+      "description": "A multi-agent development cycle for GitHub issues, started with /orchestrate.",
+      "source": {
+        "source": "git-subdir",
+        "url": "aunger/dot-and-tilde",
+        "path": "plugins/orchestrate",
+        "sha": "b8326e01d584f913eee9568c3ba6c94ecaf22c8e"
+      }
+    },
+    {
+      "name": "github-supplement",
+      "description": "GitHub REST helpers on PATH, and hooks that fetch after sub-agents, read back GitHub writes, and keep worktree agents in their own scratchpad subdirectory.",
+      "source": {
+        "source": "git-subdir",
+        "url": "aunger/dot-and-tilde",
+        "path": "plugins/github-supplement",
+        "sha": "b8326e01d584f913eee9568c3ba6c94ecaf22c8e"
+      }
+    },
+    {
+      "name": "bag-o-agents",
+      "description": "General-purpose sub-agents, starting with deep-planner.",
+      "source": {
+        "source": "git-subdir",
+        "url": "aunger/dot-and-tilde",
+        "path": "plugins/bag-o-agents",
+        "sha": "b8326e01d584f913eee9568c3ba6c94ecaf22c8e"
+      }
+    },
+    {
+      "name": "agent-citizenship",
+      "description": "Skills for editing code, opening a pull request, and writing issue descriptions and comments.",
+      "source": {
+        "source": "git-subdir",
+        "url": "aunger/dot-and-tilde",
+        "path": "plugins/agent-citizenship",
+        "sha": "b8326e01d584f913eee9568c3ba6c94ecaf22c8e"
+      }
+    }
+  ]
+}

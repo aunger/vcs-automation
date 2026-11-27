@@ -83,3 +83,20 @@ updates:
           - "*"
         exclude-patterns:
           - "pip-audit"
+
+  # The Claude Code CLI that test.yml's tests job installs to run
+  # `claude plugin validate` in test_plugin_marketplace.sh. Its version is exact
+  # in .github/claude-code/package.json, and the job installs it with `npm ci`
+  # from the committed package-lock.json beside it, so this entry is what moves
+  # it: each bump arrives as a pull request whose CI runs the validate with the
+  # new version. The directory holds that manifest and nothing else, and the
+  # platform packages are optionalDependencies of the one direct dependency, so
+  # they move in the same pull request.
+  # 13:00 Monday keeps the run an hour clear of the uv entries above.
+  - package-ecosystem: "npm"
+    directory: "/.github/claude-code"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "13:00"
+      timezone: "UTC"

@@ -28,6 +28,22 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Install Claude Code
+        # test_plugin_marketplace.sh runs `claude plugin validate` over
+        # .claude/vcs-automation-tools only when the claude CLI is on PATH; under
+        # GitHub Actions it fails that case, rather than skipping it, when this
+        # step's CLI is missing. The version is exact, in
+        # .github/claude-code/package.json, so a new Claude Code release cannot
+        # change the verdict unseen; Dependabot's npm entry proposes each bump.
+        # npm ci installs exactly what the committed package-lock.json names and
+        # checks each tarball against the lock's integrity hash. The package's
+        # postinstall script runs, so that its bin/claude.exe is the platform
+        # binary.
+        working-directory: .github/claude-code
+        run: |
+          npm ci
+          echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
+
       - name: Run the shell and Python tests
         uses: ./run-python-tests
         with:

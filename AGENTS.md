@@ -1,0 +1,57 @@
+# Instructions for agents
+
+- The development cycle for a GitHub issue or PR (Orchestrator, Programmer, Reviewer, Verification Planner, Verifier) is the `orchestrate` plugin from [aunger/dot-and-tilde](https://github.com/aunger/dot-and-tilde); its `README.md` there describes it.
+  The user starts it with `/orchestrate <issue-number>`.
+  The plugins come from `.claude/install-plugins.sh`, which installs `orchestrate`, `github-supplement`, `bag-o-agents` and `agent-citizenship` at the dot-and-tilde commit `.claude/vcs-automation-tools/.claude-plugin/marketplace.json` pins; the session-start hook runs it in cloud sessions.
+  If `/orchestrate` or an `agent-citizenship` skill is missing and your primary working directory is outside this repository (a parent holding several checkouts), the plugins cannot load in this session; ask the user for one with only this repository attached.
+  Otherwise, run `.claude/install-plugins.sh`, then ask the user to run `/reload-skills`.
+  An agent that cannot load Claude Code plugins finds the agent-citizenship skills' text in [aunger/dot-and-tilde](https://github.com/aunger/dot-and-tilde)'s `plugins/agent-citizenship/skills/`, at the commit the marketplace pins.
+  If you are asked to address an issue or PR without a specific assigned role, say that the cycle is started with `/orchestrate` rather than entering a role yourself.
+  Its project-specific settings (the repository, the named CI checks, the CI Monitor's regex for the merge gate) are in `.claude/orchestrate.json`; `test_orchestrate_config.py` checks that file.
+- If creating a PR, use the `agent-citizenship:pr-creation` skill.
+- If editing code, use the `agent-citizenship:code-edit` skill.
+  Here, the unit tests its "Finish well" asks for are `run-python-tests/run_tests.sh`, run from the repository root (`README.md`, "Tests"); this repository has no linters of its own.
+- If writing an issue description or a comment, use the `agent-citizenship:writing` skill.
+- If reading a PR's or commit's check-runs, run the orchestrate plugin's CI Monitor rather than listing them by hand: `python3 <path>/scripts/ci_monitor/ci_monitor.py --once --pr <N> --repo aunger/vcs-automation --config .claude/orchestrate.json` (or `--sha <SHA>`), where `<path>` is the `installPath` that `claude plugin list --json` gives for `orchestrate@vcs-automation-tools`.
+  See "One read, no polling" in the `README.md` beside it.
+
+## Scratchpad files
+
+Every agent in a session, including each worktree sub-agent, is given the same scratchpad directory.
+A helper left at its top level can be overwritten or run by another agent, which then reports results from a tree it never touched.
+
+- Keep scratch files in a subdirectory of the scratchpad named after your worktree directory (`agent-<id>`), or for the top-level agent, the checkout directory, never at its top level.
+- A helper that reports a test result prints the worktree path and `HEAD` it ran against, and you check both before reporting.
+
+The second point is what catches a crossed result; the first only makes one rarer.
+github-supplement's scratchpad hook warns a worktree agent whose `Bash` command, or `Write`, `Edit` or `NotebookEdit` path, reaches the scratchpad outside its subdirectory.
+
+## Prose style and typographical standards
+
+The following rules apply to prose in documents, code comments, and text output.
+
+### Word wrap in Markdown, etc
+
+Split prose at sentence breaks.
+This balances line-diff stability with moderate line lengths.
+
+This rule applies only when word wrap is a matter of preference or style, such as in Markdown and other auto-flowed source text.
+
+### Avoid angle quote, em-dash, and ellipsis characters
+
+Prefer widely compatible characters, such as those in ASCII, when the option exists.
+
+Since this rule refers only to prose, characters chosen for their specific meaning in code or markup (such as pairs of back-ticks) are exempt.
+
+- Replace dashes with commas, semicolons, or parentheses when grammatically possible, and double-hyphens otherwise.
+- Replace ellipses with triple periods.
+- Replace angled, directional, or smart quotes (single quote or double quote) with straight quote characters.
+
+### Do not surround dashes or double-hyphens with spaces
+
+Omit the spaces--like this.
+
+### Cite code with a path and line
+
+Cite code as `path/to/File.kt:59`.
+Where the surface renders links, link the citation to the file at that line.
