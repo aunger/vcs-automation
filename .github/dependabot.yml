@@ -83,3 +83,12 @@ updates:
           - "*"
         exclude-patterns:
           - "pip-audit"
+
+  # The Claude Code CLI test.yml installs for `claude plugin validate`.
+  - package-ecosystem: "npm"
+    directory: "/.github/claude-code"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "13:00"
+      timezone: "UTC"

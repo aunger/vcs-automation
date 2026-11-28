@@ -28,6 +28,20 @@ jobs:
         with:
           python-version: '3.x'
 
+      # Claude Code needs Node 22 or later.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Install Claude Code
+        # For test_plugin_marketplace.sh's `claude plugin validate`, which fails
+        # under GitHub Actions without the CLI. npm ci installs the version
+        # .github/claude-code pins, checked against its lock.
+        working-directory: .github/claude-code
+        run: |
+          npm ci
+          echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
+
       - name: Run the shell and Python tests
         uses: ./run-python-tests
         with:

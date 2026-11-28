@@ -1,0 +1,8 @@
+{
+  "name": "tests-claude-code",
+  "private": true,
+  "description": "The Claude Code CLI test.yml installs.",
+  "dependencies": {
+    "@anthropic-ai/claude-code": "2.1.328"
+  }
+}

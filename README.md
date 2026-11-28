@@ -41,6 +41,8 @@ Each action's `action.yml` documents its inputs, and the permissions and trigger
   `dependency-audit/requirements-audit.in` and `.txt` are the lock for `pip-audit` alone.
 - `test_action_files.py` checks every `action.yml` for the mistakes the actions' own tests cannot see.
 - `test_workflows.py` checks this repository's own workflows: that every action runs in one, that each local `uses:` has a checkout holding what it needs, and that the copies of each shared label table agree.
+- `.claude/` and `AGENTS.md` set up Claude Code sessions: the plugins they install from aunger/dot-and-tilde, and the orchestrate plugin's settings.
+  `test_install_plugins.sh`, `test_plugin_marketplace.sh` and `test_orchestrate_config.py` test them.
 
 An action that needs a third-party package installs the lock into a virtual environment first, with `install-pinned-requirements`, so no job depends on what its runner image ships.
 The scripts of the other actions use only the standard library.
@@ -93,7 +95,8 @@ run-python-tests/run_tests.sh
 ```
 
 `.github/workflows/test.yml` does the same through the `run-python-tests` action, and runs `dependency-audit` and `privileged-checkout-guard` over this repository.
-The tests need Python 3.11 or later and `bash`.
+The tests need Python 3.11 or later, `bash` and `git`.
+A case that needs the `claude` CLI or GitHub skips without it, except in CI.
 
 ## This repository's own workflows
 
@@ -117,7 +120,7 @@ Every action runs on this repository too, called by local path (`uses: ./<action
 Every other workflow checks out the default branch by name, so a job holding write access runs the reviewed copy of an action, never one a pull request branch supplies.
 A change to one of those actions is therefore run by its workflow only once it is merged; its own tests are what exercise it before then.
 
-`administrative-merge-holds.yml` is wired as "The merge gate and orchestrate's labels" above describes, since this repository uses that protocol: its job, `Administrative merge holds (not failure)`, is the required status check that holds a merge.
+`administrative-merge-holds.yml` is wired as "The merge gate and orchestrate's labels" above describes, since this repository uses that protocol: its job is `Administrative merge holds (not failure)`.
 The label tables of `administrative-merge-holds.yml`, `propagate-issue-labels.yml`, `reconcile-issue-labels.yml`, `snooze-issues.yml`, `wake-snoozed-issues.yml`, `label-by-title.yml` and `label-by-files.yml` share the copies "Label actions" lists, and `test_workflows.py` fails when they differ.
 
 `branch-cleanup-report.yml`'s delete job runs in the `branch-deletion` environment, which needs required reviewers and should be limited to deployments from `main`; without reviewers the job starts unapproved and deletes nothing.

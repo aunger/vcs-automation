@@ -1,0 +1,15 @@
+{
+  "_comment": "The orchestrate plugin's settings for this repository; its README documents each key, and test_orchestrate_config.py checks this file.",
+  "repository": "aunger/vcs-automation",
+  "_comment_named_checks": "test.yml's jobs. CodeQL and the merge gate are left off.",
+  "named_checks": [
+    "tests",
+    "dependency-audit",
+    "privileged-checkout-guard"
+  ],
+  "_comment_ignored": "The merge gate, red by design for the whole cycle.",
+  "ignored_check_regex": "^Administrative merge holds \\(not failure\\)$",
+  "verification_plan_marker": "<!-- orchestrate-verification-plan -->",
+  "default_model": "opus",
+  "max_rounds": 4
+}
