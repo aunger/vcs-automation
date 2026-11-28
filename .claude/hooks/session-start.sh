@@ -1,16 +1,7 @@
 #!/usr/bin/env bash
-# The SessionStart hook .claude/settings.json runs: in a cloud session, installs
-# the Claude Code plugins .claude/vcs-automation-tools pins.
-#
-# A cloud session never installs the plugins a repository declares in its
-# .claude/settings.json, so this hook does (aunger/vcs-automation#53).
-# .claude/install-plugins.sh says what it installs, when it does nothing, and what
-# its one line of stdout, which reaches the session's context, asks of the user.
-#
-# Elsewhere it does nothing: run .claude/install-plugins.sh by hand there.
-#
-# A failure of the script is reported on stdout, so the session hears of it,
-# and the hook still exits 0.
+# SessionStart hook: in a cloud session, run .claude/install-plugins.sh, since a
+# cloud session never installs the plugins a repository declares. A failure is
+# reported on stdout, which the session sees, and the hook still exits 0.
 
 set -uo pipefail
 

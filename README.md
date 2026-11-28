@@ -41,9 +41,7 @@ Each action's `action.yml` documents its inputs, and the permissions and trigger
   `dependency-audit/requirements-audit.in` and `.txt` are the lock for `pip-audit` alone.
 - `test_action_files.py` checks every `action.yml` for the mistakes the actions' own tests cannot see.
 - `test_workflows.py` checks this repository's own workflows: that every action runs in one, that each local `uses:` has a checkout holding what it needs, and that the copies of each shared label table agree.
-- `.claude/` sets up Claude Code sessions in this repository; `AGENTS.md` (which `CLAUDE.md` includes) is their instructions.
-  `.claude/vcs-automation-tools/` is a plugin marketplace pinning aunger/dot-and-tilde's `orchestrate`, `github-supplement`, `bag-o-agents` and `agent-citizenship` to one commit, and `.claude/install-plugins.sh` installs them, run by the `SessionStart` hook in cloud sessions or by hand elsewhere.
-  `.claude/orchestrate.json` is the orchestrate plugin's configuration for this repository.
+- `.claude/` and `AGENTS.md` set up Claude Code sessions: the plugins they install from aunger/dot-and-tilde, and the orchestrate plugin's settings.
   `test_install_plugins.sh`, `test_plugin_marketplace.sh` and `test_orchestrate_config.py` test them.
 
 An action that needs a third-party package installs the lock into a virtual environment first, with `install-pinned-requirements`, so no job depends on what its runner image ships.
@@ -98,8 +96,7 @@ run-python-tests/run_tests.sh
 
 `.github/workflows/test.yml` does the same through the `run-python-tests` action, and runs `dependency-audit` and `privileged-checkout-guard` over this repository.
 The tests need Python 3.11 or later, `bash` and `git`.
-`test_plugin_marketplace.sh` also runs `claude plugin validate` where the `claude` CLI is on `PATH`, and skips that case elsewhere except under GitHub Actions, where `test.yml` installs the version `.github/claude-code/package.json` pins.
-`test_orchestrate_config.py` fetches the orchestrate plugin's `check_config.py` from GitHub, and skips that case when it cannot, except when `CI` is set.
+A case that needs the `claude` CLI or GitHub skips without it, except in CI.
 
 ## This repository's own workflows
 

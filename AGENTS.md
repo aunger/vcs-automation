@@ -1,19 +1,14 @@
 # Instructions for agents
 
-- The development cycle for a GitHub issue or PR (Orchestrator, Programmer, Reviewer, Verification Planner, Verifier) is the `orchestrate` plugin from [aunger/dot-and-tilde](https://github.com/aunger/dot-and-tilde); its `README.md` there describes it.
-  The user starts it with `/orchestrate <issue-number>`.
-  The plugins come from `.claude/install-plugins.sh`, which installs `orchestrate`, `github-supplement`, `bag-o-agents` and `agent-citizenship` at the dot-and-tilde commit `.claude/vcs-automation-tools/.claude-plugin/marketplace.json` pins; the session-start hook runs it in cloud sessions.
-  If `/orchestrate` or an `agent-citizenship` skill is missing and your primary working directory is outside this repository (a parent holding several checkouts), the plugins cannot load in this session; ask the user for one with only this repository attached.
-  Otherwise, run `.claude/install-plugins.sh`, then ask the user to run `/reload-skills`.
-  An agent that cannot load Claude Code plugins finds the agent-citizenship skills' text in [aunger/dot-and-tilde](https://github.com/aunger/dot-and-tilde)'s `plugins/agent-citizenship/skills/`, at the commit the marketplace pins.
-  If you are asked to address an issue or PR without a specific assigned role, say that the cycle is started with `/orchestrate` rather than entering a role yourself.
-  Its project-specific settings (the repository, the named CI checks, the CI Monitor's regex for the merge gate) are in `.claude/orchestrate.json`; `test_orchestrate_config.py` checks that file.
-- If creating a PR, use the `agent-citizenship:pr-creation` skill.
-- If editing code, use the `agent-citizenship:code-edit` skill.
-  Here, the unit tests its "Finish well" asks for are `run-python-tests/run_tests.sh`, run from the repository root (`README.md`, "Tests"); this repository has no linters of its own.
-- If writing an issue description or a comment, use the `agent-citizenship:writing` skill.
-- If reading a PR's or commit's check-runs, run the orchestrate plugin's CI Monitor rather than listing them by hand: `python3 <path>/scripts/ci_monitor/ci_monitor.py --once --pr <N> --repo aunger/vcs-automation --config .claude/orchestrate.json` (or `--sha <SHA>`), where `<path>` is the `installPath` that `claude plugin list --json` gives for `orchestrate@vcs-automation-tools`.
-  See "One read, no polling" in the `README.md` beside it.
+- The development cycle for an issue or PR is the `orchestrate` plugin from [aunger/dot-and-tilde](https://github.com/aunger/dot-and-tilde), which the user starts with `/orchestrate <issue-number>`.
+  Asked to address an issue or PR without an assigned role, say so rather than taking a role yourself.
+  Its settings for this repository are in `.claude/orchestrate.json`.
+- `.claude/install-plugins.sh` installs the plugins `.claude/vcs-automation-tools` pins; the session-start hook runs it in cloud sessions.
+  If a plugin skill is missing and your working directory is outside this repository, ask the user for a session with only this repository attached; otherwise run the script and ask the user to run `/reload-skills`.
+  Without plugins, the skills' text is in dot-and-tilde's `plugins/agent-citizenship/skills/`.
+- Use the `agent-citizenship` skills: `pr-creation` for PRs, `code-edit` for code, and `writing` for issues and comments.
+  The tests are `run-python-tests/run_tests.sh`; there are no linters.
+- Read check-runs with the orchestrate plugin's CI Monitor (`scripts/ci_monitor/ci_monitor.py --once --config .claude/orchestrate.json`), not by hand.
 
 ## Scratchpad files
 
@@ -26,32 +21,12 @@ A helper left at its top level can be overwritten or run by another agent, which
 The second point is what catches a crossed result; the first only makes one rarer.
 github-supplement's scratchpad hook warns a worktree agent whose `Bash` command, or `Write`, `Edit` or `NotebookEdit` path, reaches the scratchpad outside its subdirectory.
 
-## Prose style and typographical standards
+## Prose style
 
-The following rules apply to prose in documents, code comments, and text output.
+These rules apply to prose in documents, code comments, and text output.
 
-### Word wrap in Markdown, etc
-
-Split prose at sentence breaks.
-This balances line-diff stability with moderate line lengths.
-
-This rule applies only when word wrap is a matter of preference or style, such as in Markdown and other auto-flowed source text.
-
-### Avoid angle quote, em-dash, and ellipsis characters
-
-Prefer widely compatible characters, such as those in ASCII, when the option exists.
-
-Since this rule refers only to prose, characters chosen for their specific meaning in code or markup (such as pairs of back-ticks) are exempt.
-
-- Replace dashes with commas, semicolons, or parentheses when grammatically possible, and double-hyphens otherwise.
-- Replace ellipses with triple periods.
-- Replace angled, directional, or smart quotes (single quote or double quote) with straight quote characters.
-
-### Do not surround dashes or double-hyphens with spaces
-
-Omit the spaces--like this.
-
-### Cite code with a path and line
-
-Cite code as `path/to/File.kt:59`.
-Where the surface renders links, link the citation to the file at that line.
+- In Markdown and other auto-flowed text, split prose at sentence breaks.
+- Prefer ASCII where there is a choice: no em-dashes (use commas, semicolons, parentheses or `--`), no ellipsis character (use `...`), and straight quotes only.
+  Characters chosen for their meaning in code or markup are exempt.
+- Write double-hyphens without surrounding spaces--like this.
+- Cite code as `path/to/file.py:59`, linked to that line where the surface renders links.

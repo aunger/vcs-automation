@@ -10,14 +10,10 @@
 # one line of stdout, and its failure handling, without the network or a real
 # Claude Code configuration.
 #
-# The hook cases run a copy of the session-start hook beside a stand-in script,
-# and check that it runs the script only when CLAUDE_CODE_REMOTE is true, that a
-# failure of the script is reported on stdout rather than failing the hook, and
-# that .claude/settings.json runs the hook.
+# The hook cases run a copy of the session-start hook beside a stand-in script.
 #
-# A copy of aunger/gallery-button-for-pixel-camera's scripts/test_install_plugins.sh,
-# with the marketplace directory renamed and the hook cases written for this
-# repository's hook, until aunger/dot-and-tilde#49 gives the script one shared home.
+# Copied from aunger/gallery-button-for-pixel-camera, with this repository's
+# hook cases, until aunger/dot-and-tilde#49 gives the script one home.
 #
 # Always exits 0 on success, non-zero on failure.
 

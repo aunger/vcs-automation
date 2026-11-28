@@ -28,24 +28,15 @@ jobs:
         with:
           python-version: '3.x'
 
-      # The Claude Code package that the next step installs declares
-      # `engines: node >=22.0.0`, so Node is pinned rather than left to the
-      # runner image.
+      # Claude Code needs Node 22 or later.
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
 
       - name: Install Claude Code
-        # test_plugin_marketplace.sh runs `claude plugin validate` over
-        # .claude/vcs-automation-tools only when the claude CLI is on PATH; under
-        # GitHub Actions it fails that case, rather than skipping it, when this
-        # step's CLI is missing. The version is exact, in
-        # .github/claude-code/package.json, so a new Claude Code release cannot
-        # change the verdict unseen; Dependabot's npm entry proposes each bump.
-        # npm ci installs exactly what the committed package-lock.json names and
-        # checks each tarball against the lock's integrity hash. The package's
-        # postinstall script runs, so that its bin/claude.exe is the platform
-        # binary.
+        # For test_plugin_marketplace.sh's `claude plugin validate`, which fails
+        # under GitHub Actions without the CLI. npm ci installs the version
+        # .github/claude-code pins, checked against its lock.
         working-directory: .github/claude-code
         run: |
           npm ci

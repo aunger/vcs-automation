@@ -1,15 +1,14 @@
 {
-  "_comment": "Project configuration for the orchestrate plugin (aunger/dot-and-tilde, installed by .claude/install-plugins.sh). The plugin's README documents every key; test_orchestrate_config.py checks this file with the plugin's check_config.py at the commit .claude/vcs-automation-tools pins, and checks each value against this repository.",
+  "_comment": "The orchestrate plugin's settings for this repository; its README documents each key, and test_orchestrate_config.py checks this file.",
   "repository": "aunger/vcs-automation",
-  "_comment_named_checks": "The CI checks the Orchestrator drives to green: the three jobs of .github/workflows/test.yml. CodeQL (codeql.yml) is left off, as gallery-button-for-pixel-camera leaves it off, and so is the merge gate. A change that adds or removes a job the cycle should wait for updates this list in the same change; test_orchestrate_config.py checks that each name is a job some workflow defines.",
+  "_comment_named_checks": "test.yml's jobs. CodeQL and the merge gate are left off.",
   "named_checks": [
     "tests",
     "dependency-audit",
     "privileged-checkout-guard"
   ],
-  "_comment_ignored": "Administrative merge holds (not failure), the job of administrative-merge-holds.yml, is the merge gate: it is red for the whole of every cycle by design, and no agent may act on it. It is left off named_checks, and ignored_check_regex leaves it out of the Monitor's verdict too (the parentheses are escaped because the value is a regex).",
+  "_comment_ignored": "The merge gate, red by design for the whole cycle.",
   "ignored_check_regex": "^Administrative merge holds \\(not failure\\)$",
-  "_comment_marker": "The plugin's default marker, set here because check_config.py warns when the key is missing. Keep it once verification-plan comments use it, so later runs find them.",
   "verification_plan_marker": "<!-- orchestrate-verification-plan -->",
   "default_model": "opus",
   "max_rounds": 4

@@ -2,10 +2,8 @@
 # .claude/install-plugins.sh: install this repository's Claude Code plugins, or move
 # them to the commit .claude/vcs-automation-tools pins.
 #
-# A copy of aunger/gallery-button-for-pixel-camera's .claude/install-plugins.sh,
-# with only its marketplace directory renamed, until aunger/dot-and-tilde#49 gives
-# the script one shared home (aunger/vcs-automation#53). Keep the two the same
-# until then: a fix made in one is made in the other.
+# Copied from aunger/gallery-button-for-pixel-camera, marketplace directory
+# renamed, until aunger/dot-and-tilde#49 gives it one home.
 #
 # .claude/vcs-automation-tools/.claude-plugin/marketplace.json lists the plugins, each a
 # git-subdir source in aunger/dot-and-tilde pinned to one commit; this script
