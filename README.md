@@ -123,7 +123,7 @@ Every action runs on this repository too, called by local path (`uses: ./<action
 Every other workflow checks out the default branch by name, so a job holding write access runs the reviewed copy of an action, never one a pull request branch supplies.
 A change to one of those actions is therefore run by its workflow only once it is merged; its own tests are what exercise it before then.
 
-`administrative-merge-holds.yml` is wired as "The merge gate and orchestrate's labels" above describes, since this repository uses that protocol: its job, `Administrative merge holds (not failure)`, is the required status check that holds a merge.
+`administrative-merge-holds.yml` is wired as "The merge gate and orchestrate's labels" above describes, since this repository uses that protocol: its job is `Administrative merge holds (not failure)`.
 The label tables of `administrative-merge-holds.yml`, `propagate-issue-labels.yml`, `reconcile-issue-labels.yml`, `snooze-issues.yml`, `wake-snoozed-issues.yml`, `label-by-title.yml` and `label-by-files.yml` share the copies "Label actions" lists, and `test_workflows.py` fails when they differ.
 
 `branch-cleanup-report.yml`'s delete job runs in the `branch-deletion` environment, which needs required reviewers and should be limited to deployments from `main`; without reviewers the job starts unapproved and deletes nothing.
