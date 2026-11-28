@@ -664,12 +664,12 @@ import sys
 with open(sys.argv[1], encoding="utf-8") as handle:
     hooks = json.load(handle)["hooks"]["SessionStart"]
 commands = [hook.get("command") for group in hooks for hook in group.get("hooks", [])]
-sys.exit(0 if commands == ["$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"] else 1)
+sys.exit(0 if commands == ['"$CLAUDE_PROJECT_DIR"/.claude/hooks/session-start.sh'] else 1)
 PY
 then
     pass ".claude/settings.json runs the hook as its one SessionStart hook"
 else
-    fail ".claude/settings.json should run \$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh as its one SessionStart hook"
+    fail ".claude/settings.json should run \"\$CLAUDE_PROJECT_DIR\"/.claude/hooks/session-start.sh, quoted for a path with a space, as its one SessionStart hook"
 fi
 
 echo ""

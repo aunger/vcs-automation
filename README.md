@@ -97,7 +97,7 @@ run-python-tests/run_tests.sh
 ```
 
 `.github/workflows/test.yml` does the same through the `run-python-tests` action, and runs `dependency-audit` and `privileged-checkout-guard` over this repository.
-The tests need Python 3.11 or later and `bash`.
+The tests need Python 3.11 or later, `bash` and `git`.
 `test_plugin_marketplace.sh` also runs `claude plugin validate` where the `claude` CLI is on `PATH`, and skips that case elsewhere except under GitHub Actions, where `test.yml` installs the version `.github/claude-code/package.json` pins.
 `test_orchestrate_config.py` fetches the orchestrate plugin's `check_config.py` from GitHub, and skips that case when it cannot, except when `CI` is set.
 

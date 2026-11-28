@@ -28,6 +28,13 @@ jobs:
         with:
           python-version: '3.x'
 
+      # The Claude Code package that the next step installs declares
+      # `engines: node >=22.0.0`, so Node is pinned rather than left to the
+      # runner image.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
       - name: Install Claude Code
         # test_plugin_marketplace.sh runs `claude plugin validate` over
         # .claude/vcs-automation-tools only when the claude CLI is on PATH; under
